@@ -1,11 +1,30 @@
 ### CS 412 Fall 2021 Final project 
 Group members: Kenan Arica, Rob Schmidt
 
-## Coming up with ideas
+THE PLAN: YOUTUBE COMMENT SPAMS 
 
-(Kenan) I'm really into the idea of classification because it seems a bit easier than regression, but I'm not sure if that's actually true. Here are some cool datasets: 
-* https://archive.ics.uci.edu/ml/datasets/Weight+Lifting+Exercises+monitored+with+Inertial+Measurement+Units
-* https://archive.ics.uci.edu/ml/datasets/Amphibians
-* https://archive.ics.uci.edu/ml/datasets/Detect+Malware+Types
+https://archive.ics.uci.edu/ml/datasets/YouTube+Spam+Collection
 
-The 'detecting malware types' seems really cool. It might be easy? 
+Psy ------- 9bZkp7q19f0 --- 175 --- 175 --- 350
+KatyPerry - CevxZvSJLk8 --- 175 --- 175 --- 350
+LMFAO ----- KQ6zr6kCPj8 --- 236 --- 202 --- 438
+Eminem ---- uelHwf8o7_U --- 245 --- 203 --- 448
+Shakira --- pRpeEdMmmQ0 --- 174 --- 196 --- 370
+
+
+Deliverables: 
+
+## Obvious things first:## 
+* Clean the data: (DEADLINE EOD 18)
+  * Sanitize the messages, get rid of the weird line endings
+  * Define a set of important variables and produce a new dataset based on that
+    * Message content, classification, Author name 
+
+DEADLINE EOD 19
+* Bag of words implementation
+* Bag of words on the message, regression on the author name 
+AFTER 19
+* Look into other ways of classifying the data
+
+
+
