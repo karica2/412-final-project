@@ -18,10 +18,10 @@ THE PLAN: **YOUTUBE COMMENT SPAMS** (<https://archive.ics.uci.edu/ml/datasets/Yo
 
 ### DEADLINE EOD 18
 
-- [ ] Clean the data
-  - [ ] Sanitize the messages, get rid of the weird line endings
-  - [ ] Define a set of important variables and produce a new dataset based on that
-    - Message content, classification, Author name
+- [X] Clean the data
+  - [X] Sanitize the messages, get rid of the weird line endings
+  - [X] Define a set of important variables and produce a new dataset based on that
+    - All values are parsed, however the classification is performed on `CONTENT` and regression should be evaluated upon `AUTHOR`
 
 ### DEADLINE EOD 19
 
