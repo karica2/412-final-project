@@ -58,4 +58,5 @@ if __name__ == '__main__':
 
     ytsc = YTSpamClassifier()
     ytsc.parse_csv(sys.argv[1])
+    print(ytsc.data)
 

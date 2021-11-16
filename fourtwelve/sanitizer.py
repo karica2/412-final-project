@@ -36,9 +36,10 @@ class CommentSanitizer:
         - the same `dict` with sanitized values
         """
 
-        # by using .strip() and .strip('\ufeff') we remove trailing whitespace
-        # long with the EOL delimiter that appears at the end of YT comments
-        line['CONTENT'] = line['CONTENT'].strip().strip('\ufeff')
+        # by using .strip('\ufeff') and .strip() we remove what appears to be an EOL delimiter
+        # and any remaining trailing whitespace
+        # !The order of the strips is important as trailing whitespace will only be recognized after the EOL is stripped!
+        line['CONTENT'] = line['CONTENT'].strip('\ufeff').strip()
 
         return line
 
