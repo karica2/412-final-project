@@ -1,7 +1,8 @@
-### CS 412 Fall 2021 Final project 
+# CS 412 Fall 2021 Final project
+
 Group members: Kenan Arica, Rob Schmidt
 
-THE PLAN: YOUTUBE COMMENT SPAMS 
+THE PLAN: YOUTUBE COMMENT SPAMS
 
 https://archive.ics.uci.edu/ml/datasets/YouTube+Spam+Collection
 
@@ -11,20 +12,18 @@ LMFAO ----- KQ6zr6kCPj8 --- 236 --- 202 --- 438
 Eminem ---- uelHwf8o7_U --- 245 --- 203 --- 448
 Shakira --- pRpeEdMmmQ0 --- 174 --- 196 --- 370
 
+Deliverables:
 
-Deliverables: 
+## Obvious things first
 
-## Obvious things first:## 
 * Clean the data: (DEADLINE EOD 18)
   * Sanitize the messages, get rid of the weird line endings
   * Define a set of important variables and produce a new dataset based on that
-    * Message content, classification, Author name 
+    * Message content, classification, Author name
 
 DEADLINE EOD 19
+
 * Bag of words implementation
-* Bag of words on the message, regression on the author name 
+* Bag of words on the message, regression on the author name
 AFTER 19
 * Look into other ways of classifying the data
-
-
-
