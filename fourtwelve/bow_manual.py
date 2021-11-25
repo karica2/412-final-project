@@ -1,8 +1,9 @@
 """
 A manual implementation of the Naive Bayes 'bag of words' classifier. 
 
-Author: 
+Authors: 
 - Kenan Arica [karica2@uic.edu]
+- Rob Schmidt [rschmi2@uic.edu]
 
 """
 
@@ -11,7 +12,7 @@ import logging
 from types import prepare_class 
 import numpy as np
 import matplotlib
-from sanitizer import CommentSanitizer
+from .sanitizer import CommentSanitizer
 import re
 
 logger = logging.getLogger(__name__)
@@ -78,11 +79,7 @@ class BagOfWords_manual:
 
             # strip out any symbols
             # probably a better way of doing this. but i dont care >:)
-            content = re.sub("!", " ", content)
-            content = re.sub("\?", " ", content)
-            content = re.sub("\.", " ", content)
-            content = re.sub("/", " ", content)
-            content = re.sub(",", " ", content)
+            content = re.sub("!|\?|\.|/|,", " ", content)
 
             comment["CONTENT"] = content
 
@@ -110,14 +107,9 @@ class BagOfWords_manual:
         input_string = input_str.lower()
         # strip out any symbols
         # probably a better way of doing this. but i dont care >:)
-        input_str = re.sub("!", " ", input_str)
-        input_str = re.sub("\?", " ", input_str)
-        input_str = re.sub("\.", " ", input_str)
-        input_str = re.sub("/", " ", input_str)
-        input_str = re.sub(",", " ", input_str)
-        input_str = re.sub("\"", " ", input_str)
+        content = re.sub("!|\?|\.|/|,", " ", input_string)
 
-        return input_str
+        return content
 
     def predict(self, comment: str) -> int:
 
@@ -194,7 +186,4 @@ class BagOfWords_manual:
                 num_correct += 1
         
         logger.info(f"Number correct: {num_correct}/{num_comments}\t\t{round(num_correct / num_comments, 3)}%")
-
-
-
 
