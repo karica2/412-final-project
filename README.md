@@ -25,9 +25,13 @@ THE PLAN: **YOUTUBE COMMENT SPAMS** (<https://archive.ics.uci.edu/ml/datasets/Yo
 
 ### DEADLINE EOD 19
 
-- [ ] Bag of words implementation
+- [X] Bag of words implementation
 - [ ] Bag of words on the message, regression on the author name
 
 ### AFTER 19
 
 - [ ] Look into other ways of classifying the data
+- [ ] NLTK Bag of Words implementation
+- [ ] Sentiment analysis
+  - [ ] Sentiment analysis and plot perceived analysis on (UNIQUENESS, PCT PITCHING A NEW ACC) 
+
