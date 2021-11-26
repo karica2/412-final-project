@@ -8,6 +8,9 @@ Authors:
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score
+
+import numpy as np
 
 from .sanitizer import CommentSanitizer
 
@@ -31,6 +34,9 @@ class BagOfWordsSKLearn:
         self.authors = [x['AUTHOR'] for x in parsed_comments]
         self.meat_quality = [int(x['CLASS']) for x in parsed_comments]
 
+        self._ngram = None
+        self._smoothing = None
+
     def train(self, data: 'list[str]', ngram=1, smoothing=False) -> None:
         """
         Perform BoW on the dataset
@@ -50,14 +56,16 @@ class BagOfWordsSKLearn:
             ngram_range=(ngram,ngram),
             stop_words='english')
 
+        # save the params for string conversion
+        self._ngram = ngram
+        self._smoothing = smoothing
+
         # use the vectorizer to fit the data
         self._bag = self._vectorizer.fit_transform(data).toarray()
         self._features = self._vectorizer.get_feature_names_out()
 
         # split the training and test data from each other
-        X_train, X_test, Y_train, Y_test = train_test_split(self._bag, self.meat_quality)
-        self._training_data = (X_train, Y_train)
-        self._testing_data = (X_test, Y_test)
+        X_train, _, Y_train, _ = train_test_split(self._bag, self.meat_quality)
 
         # fit the classifier
         self._classifier = GaussianNB()
@@ -76,19 +84,59 @@ class BagOfWordsSKLearn:
 
         return self._vectorizer.transform(data).toarray()
 
-    def predict(self, string: str) -> bool:
+    def get_accuracy(self) -> float:
         """
-        Predict if an input string is spam
+        Evaluate the GuassianNB model's comment prediction accuracy 
+
+        Returns:
+        - percentage of correctly predicted comments        
+        """
+
+        # predict the score of our test data and then compare it with
+        # sklearn's accuracy_score() evaluation
+        testing = self._classifier.predict(self.transform_data(self.comments))
+        return accuracy_score(testing, self.meat_quality)
+
+    def get_dataset_ham_spam(self, data: 'list[str]') -> 'tuple[int, int]':
+        """
+        Get the ham/spam count from the dataset itself 
 
         Args:
-        - `string`: str - input string to predict using GuassianNB model
+        - `data`: list[str] - list of input strings to classify
+
+        Returns:
+        - (# ham, # spam) in actual data
+        """
+
+        num_spam = np.sum(self.meat_quality)
+        num_ham = len(data) - num_spam
+        return (num_ham, num_spam)
+
+    def predict(self, data: 'list[str]') -> bool:
+        """
+        Predict if a collection of input strings are spam
+
+        Args:
+        - `data`: list[str] - input string list to predict using GuassianNB model
         
         Returns:
-        - `1` if input is spam
-        - `0` if input is ham
+        - tuple of (# ham comments, # spam comments)
         """
 
         # transform the data to a usable numpy array
         # and then predict it using the guassian classifier
-        data = self.transform_data([string])
-        return self._classifier.predict(data)
+        usable_data = self.transform_data(data)
+        prediction = self._classifier.predict(usable_data)
+
+        # summing the predictions will give # of spam
+        # since classes are [0,1]
+        spam = np.sum(prediction)
+        ham = len(prediction) - spam
+
+        # return the value as a tuple
+        return (ham, spam)
+
+    def __str__(self):
+        """ Print the class as a string """
+        return f"BagOfWords SKLearn - ngram={self._ngram}, smoothing={self._smoothing}"
+

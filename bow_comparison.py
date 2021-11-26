@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 from fourtwelve.bow_manual import BagOfWords_manual
+from fourtwelve.bow_sklearn import BagOfWordsSKLearn
 from fourtwelve.sanitizer import CommentSanitizer
+
+import sys
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -31,12 +34,41 @@ def test_x_comments(bow: BagOfWords_manual, filepath: str, num_comments: int ) -
             if guessed_class == correct_class:
                 num_correct += 1
         
-        logger.info(f"Number correct: {num_correct}/{num_comments}\t\t{round(num_correct / num_comments, 3)}%")
+        print(f"\tNumber correct: {num_correct}/{num_comments}\t\t{round(num_correct / num_comments, 3)}%")
 
+test_file = 'data/Youtube01-Psy.csv'
+if len(sys.argv) == 2:
+    if sys.argv[1].endswith('.csv'):
+        test_file = sys.argv[1]
 
-bow = BagOfWords_manual("data/Youtube01-Psy.csv")
+print('========= Manual BoW ==========')
+bow = BagOfWords_manual(test_file)
 
 bow.replace_link_with_constant()
 bow.get_frequency_table()
 
-test_x_comments(bow, "data/Youtube01-Psy.csv", 300)
+test_x_comments(bow, test_file, 300)
+
+print('========= SKLearn BoW ==========')
+
+def print_sklearn_bow(bow):
+    results = bow.predict(data=bow.comments)
+    real = bow.get_dataset_ham_spam(data=bow.comments)
+
+    print(f'{bow}')
+    print(f'\t{round((bow.get_accuracy()) * 100.0, 2)}% accuracy')
+    print(f'\tprediction: {results[0]} ham comments, {results[1]} spam comments')
+    print(f'\treal:       {real[0]} ham comments, {real[1]} spam comments')
+
+bow = BagOfWordsSKLearn(test_file)
+bow.train(data=bow.comments)
+print_sklearn_bow(bow)
+
+bow.train(data=bow.comments, ngram=2)
+print_sklearn_bow(bow)
+
+bow.train(data=bow.comments, ngram=1, smoothing=True)
+print_sklearn_bow(bow)
+
+bow.train(data=bow.comments, ngram=2, smoothing=True)
+print_sklearn_bow(bow)
