@@ -27,7 +27,7 @@ THE PLAN: **YOUTUBE COMMENT SPAMS** (<https://archive.ics.uci.edu/ml/datasets/Yo
 
 - [X] Bag of words implementation
 - [X] Bag of words on the message
-- [ ] Bag of words on author name
+- [X] Bag of words on author name
 
 ### AFTER 19
 
