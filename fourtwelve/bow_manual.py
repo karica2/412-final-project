@@ -112,7 +112,7 @@ class BagOfWords_manual:
         and return the comment class
 
         Args:
-        - comment: _str_ - comment string to evaluate
+        - comment: str - comment string to evaluate
 
         Returns:
         - 0 if ham, 1 if spam
