@@ -127,8 +127,8 @@ class BagOfWords_NLTK:
             new_words.append([comment_tokenized, entry[1]])
 
         # logger.info(f"Ham, Spam: {meat_totals}")
-        self.n_ham = meat_totals[0]
-        self.n_spam = meat_totals[1]
+        self.n_ham_comments = meat_totals[0]
+        self.n_spam_comments = meat_totals[1]
 
         return new_words
 
@@ -165,6 +165,31 @@ class BagOfWords_NLTK:
                 else:
                     self.table[word][meat_type] += 1
         
+        self.occurance_table = {}
+        for comment in data: 
+
+
+            set_of_words = set(word for word in comment[0])
+            for word in set_of_words:
+
+                if word not in self.occurance_table:
+                    
+                    # [word] = [# of docs it occurs in ham, # of docs in spam]
+                    
+                    # if it's ham
+                    if comment[1] == 0:
+                        self.occurance_table[word] = [1, 0]
+                    else:
+                        self.occurance_table[word] = [0, 1]
+                else:
+                    self.occurance_table[word][comment[1]] += 1
+        
+        logger.info(self.occurance_table)
+
+
+
+
+        
     # pulled these functions from bow_manual like an idiot and modded it so i could see if the original method of prediction was any better using this implementation
     # it's not.
 
@@ -189,8 +214,8 @@ class BagOfWords_NLTK:
                 num_spam = entry[1]
                 
                 # Get the term frequency
-                ham *= (num_ham + 1) / (self.n_ham + 1)
-                spam *= (num_spam + 1) / (self.n_spam + 1)
+                ham *= (num_ham + 1) / (self.n_ham_comments + 1)
+                spam *= (num_spam + 1) / (self.n_spam_comments + 1)
                 
             if ham > spam:
                 return 0
@@ -249,32 +274,29 @@ class BagOfWords_NLTK:
                 continue
             
             entry = self.table[token]
-            num_ham = entry[0]
-            num_spam = entry[1]
+            occurs_in_ham = entry[0]
+            occurs_in_spam = entry[1]
             
-            # Get the term frequency
-            ham *= (num_ham + 1) / (self.total_words_ham + 1)
-            spam *= (num_spam + 1) / (self.total_words_spam + 1)
+            # use laplace smoothing, so we add one
+            TF_ham = (1 + occurs_in_ham) / (self.total_words_ham + 1)
+            TF_spam = (1 + occurs_in_spam) / (self.total_words_spam + 1)
 
-            ham_idf = (self.n_ham + 1) / (num_ham + 1)
-            spam_idf = (self.n_spam + 1) / (num_spam + 1)
-            h_tfidf = ham_idf * ham
-            s_tfidf = spam_idf * spam
-            """
-            So here's the issue. the formulas I used for TF-IDF use a natural log function. 
-            However, most of these TF-IDF values are extremely small think e-24 to e-100. 
-            The issue with that is, if a value in ln is near zero, it goes super super negative, meaning 
-            this doesn't work at all. I'm not sure what to do here. Maybe not use TF-IDF, and instead focus 
-            on increase in accuracy from lemmatizing and stemming? 
+            ham_num_documents_containing = self.occurance_table[token][0]
+            spam_num_documents_containing = self.occurance_table[token][1]
 
-            For ref: TF-IDF this way has an accuracy of 63% give or take, which is not usable.
-            """
-            multiplied_ham *= h_tfidf
-            multiplied_spam *= s_tfidf
+            # IDF_ham = (1+ np.log((self.n_ham_comments + 1 ) / (ham_num_documents_containing + 1)))
+            # IDF_spam = (1+ np.log((self.n_spam_comments + 1 ) / (spam_num_documents_containing + 1)))
+            
 
-            logger.info(f"[{token}] TF: {multiplied_spam}")
-            logger.info(f"[{token}] TF: {multiplied_ham}")
+            IDF_ham = (1+ (self.n_ham_comments + self.n_spam_comments + 1 ) / (ham_num_documents_containing + 1))
+            IDF_spam = (1+ (self.n_spam_comments + self.n_ham_comments + 1 ) / (spam_num_documents_containing + 1))
+            
 
+            multiplied_ham = TF_ham * IDF_ham
+            multiplied_spam = TF_spam *IDF_spam
+
+            # logger.info(f"[{token}] ham {multiplied_ham}")            
+            # logger.info(f"[{token}] spam {multiplied_spam}")            
 
         if multiplied_ham > multiplied_spam:
             return 0
