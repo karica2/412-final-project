@@ -14,6 +14,7 @@ Author:
 import logging
 from os import remove
 import re
+import numpy as np
 
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -125,7 +126,9 @@ class BagOfWords_NLTK:
             comment_tokenized = self.lemma_and_stem(comment_tokenized)
             new_words.append([comment_tokenized, entry[1]])
 
-        logger.info(f"Ham, Spam: {meat_totals}")
+        # logger.info(f"Ham, Spam: {meat_totals}")
+        self.n_ham = meat_totals[0]
+        self.n_spam = meat_totals[1]
 
         return new_words
 
@@ -143,16 +146,21 @@ class BagOfWords_NLTK:
 
     def build_frequency_table(self, data: list) -> None:
         self.table = {}
+        self.total_words_ham = 0
+        self.total_words_spam = 0
         for comment in data:
 
             # get the class 
             meat_type = comment[1]
             # 
             for word in comment[0]: 
+
                 if word not in self.table:
                     if meat_type == 0:
+                        self.total_words_ham += 1
                         self.table[word] = [1, 0]
                     elif meat_type == 1:
+                        self.total_words_spam += 1
                         self.table[word] = [0, 1]
                 else:
                     self.table[word][meat_type] += 1
@@ -180,27 +188,9 @@ class BagOfWords_NLTK:
                 num_ham = entry[0]
                 num_spam = entry[1]
                 
-                # if the word is a one-off like [0, 1] or [1, 0], ignore it
-                # maybe just delete them from the table altogether?
-                if entry == [0, 1] or entry == [1, 0]:
-                    continue
-
-                # not sure what to do about disproportionate words, or words that appear 0 times in one class and lots in the other, because multiplying a probability by 0 will ruin the process.
-                # for now, I'm going to weight it as 1 / non-zero + 1 
-                if num_ham == 0:
-                    
-                    ham *= 1 / (num_spam + 1)
-                    spam *= 1
-                    continue
-                elif num_spam == 0:
-                    
-                    ham *= 1
-                    spam *= 1 / (num_spam + 1)
-                    continue
-
-                # if we're all good, calculate
-                ham *= num_ham / (num_ham + num_spam)
-                spam *= num_spam / (num_spam + num_ham)
+                # Get the term frequency
+                ham *= (num_ham + 1) / (self.n_ham + 1)
+                spam *= (num_spam + 1) / (self.n_spam + 1)
                 
             if ham > spam:
                 return 0
@@ -209,7 +199,7 @@ class BagOfWords_NLTK:
 
 
      
-    def test_x_comments(self, filepath: str, num_comments: int ) -> None:
+    def test_x_comments(self, filepath: str, num_comments: int, use_tf_idf: bool = False) -> None:
 
 
         CMS = CommentSanitizer(filepath)
@@ -226,7 +216,10 @@ class BagOfWords_NLTK:
             content = comment["CONTENT"]
 
             correct_class = int(comment["CLASS"])
-            guessed_class = self.predict(content)
+            if use_tf_idf:
+                guessed_class = self.tf_idf(content)    
+            else:
+                guessed_class = self.predict(content)
 
             if guessed_class == correct_class:
                 num_correct += 1
@@ -234,6 +227,58 @@ class BagOfWords_NLTK:
         logger.info(f"Number correct: {num_correct}/{num_comments}\t\t{round(num_correct / num_comments, 3)}%")
 
 
+    # idk how this works yet
+    def tf_idf(self, comment: str):
+
+        comment = self.standardize_data([[comment, -1]])[0]
+        
+            # go through every word and get the probability
 
 
+        ham = 1
+        spam = 1 
+        multiplied_spam = 1
+        multiplied_ham = 1 
+        
+        for token in comment[0]:
+            
+            # get both frequencies
+
+            # not sure what to do here. If the token isn't in the table, do nothing? need input
+            if token not in self.table:
+                continue
+            
+            entry = self.table[token]
+            num_ham = entry[0]
+            num_spam = entry[1]
+            
+            # Get the term frequency
+            ham *= (num_ham + 1) / (self.total_words_ham + 1)
+            spam *= (num_spam + 1) / (self.total_words_spam + 1)
+
+            ham_idf = (self.n_ham + 1) / (num_ham + 1)
+            spam_idf = (self.n_spam + 1) / (num_spam + 1)
+            h_tfidf = ham_idf * ham
+            s_tfidf = spam_idf * spam
+            """
+            So here's the issue. the formulas I used for TF-IDF use a natural log function. 
+            However, most of these TF-IDF values are extremely small think e-24 to e-100. 
+            The issue with that is, if a value in ln is near zero, it goes super super negative, meaning 
+            this doesn't work at all. I'm not sure what to do here. Maybe not use TF-IDF, and instead focus 
+            on increase in accuracy from lemmatizing and stemming? 
+
+            For ref: TF-IDF this way has an accuracy of 63% give or take, which is not usable.
+            """
+            multiplied_ham *= h_tfidf
+            multiplied_spam *= s_tfidf
+
+            logger.info(f"[{token}] TF: {multiplied_spam}")
+            logger.info(f"[{token}] TF: {multiplied_ham}")
+
+
+        if multiplied_ham > multiplied_spam:
+            return 0
+        if multiplied_spam > multiplied_ham:
+            return 1
+        # return 2
     # TODO: implement TF-IDF
