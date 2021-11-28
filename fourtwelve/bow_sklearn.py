@@ -1,7 +1,7 @@
 """
 A 'bag of words' classifier built upon Sci-kit learn `TfidfVectorizer`
 
-Authors: 
+Authors:
 - Rob Schmidt <rschmi2@uic.edu>
 """
 
@@ -20,22 +20,27 @@ class BagOfWordsSKLearn:
     A general BagOfWords implementation that will run on any list of data
     """
 
-    def __init__(self, filename: str):
+    def __init__(self, filenames: 'list[str]'):
         """
-        Create a BagOfWords instance which loads a CSV
-        
+        Create a BagOfWords instance which loads multiple CSV files
+
         Args:
-        - `filename`: str - filename or path of CSV
+        - `filenames`: list[str] - a list of filenames or paths to CSV
         """
 
-        cms = CommentSanitizer(filename)
-        parsed_comments = sorted(cms.parse(), key=lambda c: c['CONTENT'])
-        self.comments = [x['CONTENT'] for x in parsed_comments]
-        self.authors = [x['AUTHOR'] for x in parsed_comments]
-        self.meat_quality = [int(x['CLASS']) for x in parsed_comments]
+        self.comments = []
+        self.authors = []
+        self.meat_quality = []
 
         self._ngram = None
         self._smoothing = None
+
+        for f in filenames:
+            cms = CommentSanitizer(f)
+            parsed_comments = sorted(cms.parse(), key=lambda c: c['CONTENT'])
+            self.comments.extend([x['CONTENT'] for x in parsed_comments])
+            self.authors.extend([x['AUTHOR'] for x in parsed_comments])
+            self.meat_quality.extend([int(x['CLASS']) for x in parsed_comments])
 
     def train(self, data: 'list[str]', ngram=1, smoothing=False) -> None:
         """
@@ -50,8 +55,8 @@ class BagOfWordsSKLearn:
         # tfidf stands for term frequency-inverse document frequency
         # which is a fancy way to say "exclude common stuff and smooth"
         self._vectorizer = TfidfVectorizer(
-            use_idf=True, 
-            smooth_idf=smoothing, 
+            use_idf=True,
+            smooth_idf=smoothing,
             max_features=10000,
             ngram_range=(ngram,ngram),
             stop_words='english')
@@ -65,7 +70,7 @@ class BagOfWordsSKLearn:
         self._features = self._vectorizer.get_feature_names_out()
 
         # split the training and test data from each other
-        X_train, _, Y_train, _ = train_test_split(self._bag, self.meat_quality)
+        X_train, self.X_test, Y_train, self.Y_test = train_test_split(self._bag, self.meat_quality)
 
         # fit the classifier
         self._classifier = GaussianNB()
@@ -86,20 +91,20 @@ class BagOfWordsSKLearn:
 
     def get_accuracy(self) -> float:
         """
-        Evaluate the GuassianNB model's comment prediction accuracy 
+        Evaluate the GuassianNB model's comment prediction accuracy
 
         Returns:
-        - percentage of correctly predicted comments        
+        - percentage of correctly predicted comments
         """
 
         # predict the score of our test data and then compare it with
         # sklearn's accuracy_score() evaluation
-        testing = self._classifier.predict(self.transform_data(self.comments))
-        return accuracy_score(testing, self.meat_quality)
+        testing = self._classifier.predict(self.X_test)
+        return accuracy_score(testing, self.Y_test)
 
     def get_dataset_ham_spam(self, data: 'list[str]') -> 'tuple[int, int]':
         """
-        Get the ham/spam count from the dataset itself 
+        Get the ham/spam count from the dataset itself
 
         Args:
         - `data`: list[str] - list of input strings to classify
@@ -118,7 +123,7 @@ class BagOfWordsSKLearn:
 
         Args:
         - `data`: list[str] - input string list to predict using GuassianNB model
-        
+
         Returns:
         - tuple of (# ham comments, # spam comments)
         """
