@@ -17,14 +17,14 @@ def test_x_comments(bow: BagOfWords_manual, filepath: str, num_comments: int ) -
 
         CMS = CommentSanitizer(filepath)
         comments = CMS.parse()
-        if num_comments > len(comments): 
+        if num_comments > len(comments):
             logger.warn(f" number of comments requested ({num_comments}) is greater than list length ({len(comments)})")
             return
         comments = comments[:num_comments]
 
         num_correct = 0
 
-        for comment in comments: 
+        for comment in comments:
 
             content = bow.clean_test_string(comment["CONTENT"])
 
@@ -33,7 +33,7 @@ def test_x_comments(bow: BagOfWords_manual, filepath: str, num_comments: int ) -
 
             if guessed_class == correct_class:
                 num_correct += 1
-        
+
         print(f"\tNumber correct: {num_correct}/{num_comments}\t\t{round(num_correct / num_comments, 3)}%")
 
 test_file = 'data/Youtube01-Psy.csv'
@@ -59,7 +59,9 @@ def print_sklearn_bow(bow):
     print(f'\tprediction: {results[0]} ham comments, {results[1]} spam comments')
     print(f'\treal:       {real[0]} ham comments, {real[1]} spam comments')
 
-bow = BagOfWordsSKLearn(test_file)
+test_files = ['data/Youtube01-Psy.csv', 'data/Youtube02-KatyPerry.csv', 'data/Youtube03-LMFAO.csv', 'data/Youtube04-Eminem.csv', 'data/Youtube05-Shakira.csv']
+
+bow = BagOfWordsSKLearn(test_files)
 bow.train(data=bow.comments)
 print_sklearn_bow(bow)
 
