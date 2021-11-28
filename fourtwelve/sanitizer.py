@@ -55,14 +55,14 @@ class CommentSanitizer:
 
         # read each row from the reader and sanitize it
         # then, append the row to the dictlist
-        logger.info('parsing data from csv at "%s"', self.filename)
-        with open(self.filename) as csvfile:
+        logger.debug('parsing data from csv at "%s"', self.filename)
+        with open(self.filename, errors='ignore') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 r = self._sanitize_comment(row)
                 dictlist.append(r)
 
-        logger.info('parsed %d entries from CSV file "%s"', len(dictlist), self.filename)
+        logger.debug('parsed %d entries from CSV file "%s"', len(dictlist), self.filename)
 
         # dictlist should have all rows sanitized now
         return dictlist

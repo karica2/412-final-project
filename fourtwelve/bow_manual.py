@@ -1,17 +1,14 @@
 """
 A manual implementation of the Naive Bayes 'bag of words' classifier. 
 
-Author: 
+Authors: 
 - Kenan Arica [karica2@uic.edu]
+- Rob Schmidt [rschmi2@uic.edu]
 
 """
 
-import csv
 import logging
-from types import prepare_class 
-import numpy as np
-import matplotlib
-from sanitizer import CommentSanitizer
+from .sanitizer import CommentSanitizer
 import re
 
 logger = logging.getLogger(__name__)
@@ -26,7 +23,6 @@ class BagOfWords_manual:
         self.comments = self.CMS.parse()
 
     def get_frequency_table(self) -> None:
-        
         """
         1. Figure out what type of parameter we need (probably parsed csv, i don't think a numpy array is necessary)
         2. Preprocess the data by getting rid of stop words and replacing links with one master word that indicates a link 
@@ -64,33 +60,30 @@ class BagOfWords_manual:
         self._table = table
 
     def replace_link_with_constant(self) -> dict:
+        """
+        Replace a link in a comment with the LINK_CONSTANT
+
+        This function will replace multiple occurrances of a link as well
+        """
         
-        comments = self.comments
-        for comment in comments:
-            
+        for idx, comment in enumerate(self.comments):
             content = comment["CONTENT"]
             links = re.findall(r'(https?://[^\s]+)', content)
            
             # for each link, replace it with our constant
             for link in links:
-
                 content = content.replace(link, LINK_CONSTANT)
 
             # strip out any symbols
-            # probably a better way of doing this. but i dont care >:)
-            content = re.sub("!", " ", content)
-            content = re.sub("\?", " ", content)
-            content = re.sub("\.", " ", content)
-            content = re.sub("/", " ", content)
-            content = re.sub(",", " ", content)
-
-            comment["CONTENT"] = content
-
-        self.comments = comments
+            content = re.sub("!|\?|\.|/|,", " ", content)
+            self.comments[idx]["CONTENT"] = content
 
         pass
     
     def print_comments(self): 
+        """
+        Log the comments to stdout
+        """
 
         for comment in self.comments:
             logger.info(comment)
@@ -109,17 +102,21 @@ class BagOfWords_manual:
 
         input_string = input_str.lower()
         # strip out any symbols
-        # probably a better way of doing this. but i dont care >:)
-        input_str = re.sub("!", " ", input_str)
-        input_str = re.sub("\?", " ", input_str)
-        input_str = re.sub("\.", " ", input_str)
-        input_str = re.sub("/", " ", input_str)
-        input_str = re.sub(",", " ", input_str)
-        input_str = re.sub("\"", " ", input_str)
+        content = re.sub("!|\?|\.|/|,", " ", input_string)
 
-        return input_str
+        return content
 
     def predict(self, comment: str) -> int:
+        """
+        Predict the spamminess or hamminess of a comment
+        and return the comment class
+
+        Args:
+        - comment: str - comment string to evaluate
+
+        Returns:
+        - 0 if ham, 1 if spam
+        """
 
         # go through every word and get the probability
         ham = 1
@@ -161,40 +158,7 @@ class BagOfWords_manual:
             ham *= num_ham / (num_ham + num_spam)
             spam *= num_spam / (num_spam + num_ham)
             
-        if ham > spam:
-            return 0
         if spam > ham:
             return 1
-
-
-        pass
-
-    # could probably move this stuff out into bow_comparison.py
-    # test the first X comments from a file
-    def test_x_comments(self, filepath: str, num_comments: int ) -> None:
-
-
-        CMS = CommentSanitizer(filepath)
-        comments = CMS.parse()
-        if num_comments > len(comments): 
-            logger.warn(f" number of comments requested ({num_comments}) is greater than list length ({len(comments)})")
-            return
-        comments = comments[:num_comments]
-
-        num_correct = 0
-
-        for comment in comments: 
-
-            content = self.clean_test_string(comment["CONTENT"])
-
-            correct_class = int(comment["CLASS"])
-            guessed_class = self.predict(content)
-
-            if guessed_class == correct_class:
-                num_correct += 1
-        
-        logger.info(f"Number correct: {num_correct}/{num_comments}\t\t{round(num_correct / num_comments, 3)}%")
-
-
-
+        return 0
 
