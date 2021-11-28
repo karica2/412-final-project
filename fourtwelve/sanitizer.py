@@ -56,7 +56,7 @@ class CommentSanitizer:
         # read each row from the reader and sanitize it
         # then, append the row to the dictlist
         logger.debug('parsing data from csv at "%s"', self.filename)
-        with open(self.filename) as csvfile:
+        with open(self.filename, encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 r = self._sanitize_comment(row)
