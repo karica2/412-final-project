@@ -28,19 +28,19 @@ class BagOfWordsSKLearn:
         - `filenames`: list[str] - a list of filenames or paths to CSV
         """
 
-        self.comments = []
-        self.authors = []
-        self.meat_quality = []
-
         self._ngram = None
         self._smoothing = None
 
+        comments = []
         for f in filenames:
             cms = CommentSanitizer(f)
-            parsed_comments = sorted(cms.parse(), key=lambda c: c['CONTENT'])
-            self.comments.extend([x['CONTENT'] for x in parsed_comments])
-            self.authors.extend([x['AUTHOR'] for x in parsed_comments])
-            self.meat_quality.extend([int(x['CLASS']) for x in parsed_comments])
+            comments.extends(cms.parse())
+
+        comments = sorted(comments, key=lambda c: c['CONTENT'])
+
+        self.comments.extend([x['CONTENT'] for x in comments])
+        self.authors.extend([x['AUTHOR'] for x in comments])
+        self.meat_quality.extend([int(x['CLASS']) for x in comments])
 
     def train(self, data: 'list[str]', ngram=1, smoothing=False) -> None:
         """
