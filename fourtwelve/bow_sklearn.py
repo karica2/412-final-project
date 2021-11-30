@@ -6,7 +6,7 @@ Authors:
 """
 
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score, KFold
 from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score
 
@@ -37,10 +37,49 @@ class BagOfWordsSKLearn:
 
         for f in filenames:
             cms = CommentSanitizer(f)
-            parsed_comments = sorted(cms.parse(), key=lambda c: c['CONTENT'])
-            self.comments.extend([x['CONTENT'] for x in parsed_comments])
-            self.authors.extend([x['AUTHOR'] for x in parsed_comments])
-            self.meat_quality.extend([int(x['CLASS']) for x in parsed_comments])
+            comments.extend(cms.parse())
+
+        self.comments = sorted(comments, key=lambda c: c['CONTENT'])
+
+        self.comments     = [x['CONTENT'] for x in comments]
+        self.authors      = [x['AUTHOR'] for x in comments]
+        self.meat_quality = [int(x['CLASS']) for x in comments]
+
+    def kfold(self, data: 'list[str]', k=5) -> None:
+        """
+        Perform a K-Fold from the dataset
+
+        Args:
+        - `data`: list[str] - list of strings to BoW
+        - `k`: int - iterations for k-fold (default 5)
+
+        Returns:
+        - Average accuracy after k iterations
+        """
+
+        # tfidf stands for term frequency-inverse document frequency
+        # which is a fancy way to say "exclude common stuff and smooth"
+        self._vectorizer = TfidfVectorizer(
+            use_idf=True,
+            smooth_idf=True,
+            max_features=10000,
+            ngram_range=(1,1),
+            stop_words='english')
+
+        # save the params for string conversion
+        self._ngram = 1
+        self._smoothing = True
+
+        # use the vectorizer to fit the data
+        self._bag = self._vectorizer.fit_transform(data).toarray()
+        self._features = self._vectorizer.get_feature_names_out()
+
+        self._classifier = GaussianNB()
+        kfolder = KFold(n_splits=k, random_state=None)
+
+        result = cross_val_score(self._classifier, self._bag, self.meat_quality, cv=kfolder)
+        return result.mean()
+
 
     def train(self, data: 'list[str]', ngram=1, smoothing=False) -> None:
         """
