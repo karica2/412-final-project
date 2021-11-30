@@ -50,6 +50,18 @@ bow.get_frequency_table()
 test_x_comments(bow, test_file, 300)
 
 
+test_files = ['data/Youtube01-Psy.csv', 'data/Youtube02-KatyPerry.csv', 'data/Youtube03-LMFAO.csv', 'data/Youtube04-Eminem.csv', 'data/Youtube05-Shakira.csv']
+print(f'\nTraining data:\n\t{test_files}')
+
+print('========= BoW TF-IDF ==========')
+bow = BagOfWords_NLTK(test_files)
+print('\twithout TF-IDF:')
+bow.test_x_comments(test_file, 300, use_tf_idf=False)
+#print('\twith TF-IDF:')
+#bow.test_x_comments(test_file, 300, use_tf_idf=True)
+
+
+
 print('========= SKLearn BoW ==========')
 def print_sklearn_bow(bow):
     results = bow.predict(data=bow.comments)
@@ -71,9 +83,8 @@ print_sklearn_bow(bow)
 bow.train(data=bow.comments, ngram=1, smoothing=True)
 print_sklearn_bow(bow)
 
-bow.train(data=bow.comments, ngram=2, smoothing=True)
-print_sklearn_bow(bow)
-
+print('========= SKLearn BoW (k-fold) ==========')
+print(f'Average accuracy: {bow.kfold(data=bow.comments)}\n')
 
 print('========= SKLearn BoW (author name) ==========')
 bow.train(data=bow.authors)
