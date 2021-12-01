@@ -44,12 +44,9 @@ if len(sys.argv) == 2:
 print(f'Test file: {test_file}\n')
 
 print('========= Manual BoW ==========')
-bow = BagOfWords_manual(test_file)
+bow = BagOfWords_manual([test_file])
 
-bow.replace_link_with_constant()
-bow.get_frequency_table()
-
-test_x_comments(bow, test_file, 300)
+bow.test_x_comments(test_file, 300)
 
 
 test_files = ['data/Youtube01-Psy.csv', 'data/Youtube02-KatyPerry.csv', 'data/Youtube03-LMFAO.csv', 'data/Youtube04-Eminem.csv', 'data/Youtube05-Shakira.csv']
