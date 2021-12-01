@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from fourtwelve.bow_nltk import BagOfWords_NLTK
 from fourtwelve.bow_manual import BagOfWords_manual
 from fourtwelve.bow_sklearn import BagOfWordsSKLearn
 from fourtwelve.sanitizer import CommentSanitizer
@@ -40,14 +41,12 @@ test_file = 'data/Youtube01-Psy.csv'
 if len(sys.argv) == 2:
     if sys.argv[1].endswith('.csv'):
         test_file = sys.argv[1]
+print(f'Test file: {test_file}\n')
 
 print('========= Manual BoW ==========')
-bow = BagOfWords_manual(test_file)
+bow = BagOfWords_manual([test_file])
 
-bow.replace_link_with_constant()
-bow.get_frequency_table()
-
-test_x_comments(bow, test_file, 300)
+bow.test_x_comments(test_file, 300)
 
 
 test_files = ['data/Youtube01-Psy.csv', 'data/Youtube02-KatyPerry.csv', 'data/Youtube03-LMFAO.csv', 'data/Youtube04-Eminem.csv', 'data/Youtube05-Shakira.csv']
@@ -60,8 +59,6 @@ bow.test_x_comments(test_file, 300, use_tf_idf=False)
 #print('\twith TF-IDF:')
 #bow.test_x_comments(test_file, 300, use_tf_idf=True)
 
-
-
 print('========= SKLearn BoW ==========')
 def print_sklearn_bow(bow):
     results = bow.predict(data=bow.comments)
@@ -71,15 +68,10 @@ def print_sklearn_bow(bow):
     print(f'\tprediction: {results[0]} ham comments, {results[1]} spam comments')
     print(f'\treal:       {real[0]} ham comments, {real[1]} spam comments')
 
-test_files = ['data/Youtube01-Psy.csv', 'data/Youtube02-KatyPerry.csv', 'data/Youtube03-LMFAO.csv', 'data/Youtube04-Eminem.csv', 'data/Youtube05-Shakira.csv']
 
 bow = BagOfWordsSKLearn(test_files)
 bow.train(data=bow.comments)
 print_sklearn_bow(bow)
-
-bow.train(data=bow.comments, ngram=2)
-print_sklearn_bow(bow)
-
 bow.train(data=bow.comments, ngram=1, smoothing=True)
 print_sklearn_bow(bow)
 
@@ -87,8 +79,8 @@ print('========= SKLearn BoW (k-fold) ==========')
 print(f'Average accuracy: {bow.kfold(data=bow.comments)}\n')
 
 print('========= SKLearn BoW (author name) ==========')
-bow.train(data=bow.authors)
+bow.train(data=bow.authors, smoothing=True)
 print_sklearn_bow(bow)
 
-bow.train(data=bow.authors, smoothing=True)
+bow.train(data=bow.authors, ngram=2, smoothing=True)
 print_sklearn_bow(bow)
