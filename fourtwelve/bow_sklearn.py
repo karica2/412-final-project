@@ -28,13 +28,10 @@ class BagOfWordsSKLearn:
         - `filenames`: list[str] - a list of filenames or paths to CSV
         """
 
-        self.comments = []
-        self.authors = []
-        self.meat_quality = []
-
         self._ngram = None
         self._smoothing = None
 
+        comments = []
         for f in filenames:
             cms = CommentSanitizer(f)
             comments.extend(cms.parse())
@@ -79,7 +76,6 @@ class BagOfWordsSKLearn:
 
         result = cross_val_score(self._classifier, self._bag, self.meat_quality, cv=kfolder)
         return result.mean()
-
 
     def train(self, data: 'list[str]', ngram=1, smoothing=False) -> None:
         """
