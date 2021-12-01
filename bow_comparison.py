@@ -59,10 +59,8 @@ print('========= BoW TF-IDF ==========')
 bow = BagOfWords_NLTK(test_files)
 print('\twithout TF-IDF:')
 bow.test_x_comments(test_file, 300, use_tf_idf=False)
-print('\twith TF-IDF:')
-bow.test_x_comments(test_file, 300, use_tf_idf=True)
-
-
+#print('\twith TF-IDF:')
+#bow.test_x_comments(test_file, 300, use_tf_idf=True)
 
 print('========= SKLearn BoW ==========')
 def print_sklearn_bow(bow):
@@ -80,6 +78,8 @@ print_sklearn_bow(bow)
 bow.train(data=bow.comments, ngram=1, smoothing=True)
 print_sklearn_bow(bow)
 
+print('========= SKLearn BoW (k-fold) ==========')
+print(f'Average accuracy: {bow.kfold(data=bow.comments)}\n')
 
 print('========= SKLearn BoW (author name) ==========')
 bow.train(data=bow.authors, smoothing=True)
