@@ -13,6 +13,7 @@ def test_x_comments(bow: BagOfWords_manual, filepath: str, num_comments: int) ->
         """
         test the first X comments from a file
         """
+        start = time.time()
 
         CMS = CommentSanitizer(filepath)
         comments = CMS.parse()
@@ -32,8 +33,9 @@ def test_x_comments(bow: BagOfWords_manual, filepath: str, num_comments: int) ->
 
             if guessed_class == correct_class:
                 num_correct += 1
-
+        finished_in = round(time.time() - start, 2)
         print(f"\tNumber correct: {num_correct}/{num_comments}\t\t{round(num_correct / num_comments, 3)}%")
+        print(f"Predicted {num_comments} comments in {finished_in} seconds")
         return num_correct
 
 

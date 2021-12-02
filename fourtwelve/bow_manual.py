@@ -8,6 +8,7 @@ Authors:
 """
 
 import logging
+import time
 from .sanitizer import CommentSanitizer
 import re
 
@@ -22,13 +23,15 @@ LINK_CONSTANT = "LINKTOSITE"
 class BagOfWords_manual:
 
     def __init__(self, corpi: list, stemming: bool = False, remove_stopwords: bool = True, remove_oneoffs: bool = True) -> None:
-        
+        start = time.time()
         self.load_corpus(corpi)
 
         self.data = self.standardize_data(self.raw_words, stemming, remove_stopwords)
         self.build_frequency_table(self.data)
         if remove_oneoffs:
             self.remove_oneoffs()
+        finished_in = round(time.time() - start, 2)
+        logger.info(f"Model trained in {finished_in} seconds")
 
     def load_corpus(self, corpi: list) -> None:
         """
