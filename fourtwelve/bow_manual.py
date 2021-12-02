@@ -8,6 +8,7 @@ Authors:
 """
 
 import logging
+import time
 from .sanitizer import CommentSanitizer
 import re
 
@@ -22,13 +23,17 @@ LINK_CONSTANT = "LINKTOSITE"
 class BagOfWords_manual:
 
     def __init__(self, corpi: list, stemming: bool = False, remove_stopwords: bool = True, remove_oneoffs: bool = True) -> None:
-        
+
+        start = time.time()
         self.load_corpus(corpi)
 
         self.data = self.standardize_data(self.raw_words, stemming, remove_stopwords)
         self.build_frequency_table(self.data)
         if remove_oneoffs:
             self.remove_oneoffs()
+
+        finished_in = round(time.time() - start, 2)
+        logger.info(f"Model trained in {finished_in} seconds")
 
     def load_corpus(self, corpi: list) -> None:
         """
@@ -48,10 +53,8 @@ class BagOfWords_manual:
             # take our collection of strings, make a parser from each
             CMS = CommentSanitizer(corpus)
             master_table += CMS.parse()
-
         # we don't actually need most of the information given to us -- just the comment and meat value
         self.raw_words = [[comment["CONTENT"], int(comment["CLASS"])] for comment in master_table]
-
 
     def stem(self, content: list) -> list:
         """
@@ -193,8 +196,6 @@ class BagOfWords_manual:
             if spam > ham:
                 return 1
 
-
-     
     def test_x_comments(self, filepath: str, num_comments: int, use_tf_idf: bool = False) -> None:
 
         CMS = CommentSanitizer(filepath)
